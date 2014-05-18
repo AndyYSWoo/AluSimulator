@@ -28,7 +28,6 @@ public class ALU {
 			test=test<<1;
 		}
 		result=String.valueOf(resultArray);
-
 		return result;
 	}
 	public String TrueValue (String operand){
@@ -46,7 +45,6 @@ public class ALU {
 		}
 		result=String.valueOf(resultNum);
 		return result;
-		
 	}
 	public String Negation (String operand){
 		char[] temp;
@@ -193,7 +191,49 @@ public class ALU {
 		return result;
 	}
 	public String Multiplication (String operand1, String operand2, int length){
-		return null;
+		String product="";
+		String multiplicand=null;
+		String multiplier=null;
+		//将操作数转化为length长度
+		char[] o1=new char[length];
+		char[] o2=new char[length];
+		for(int i=0;i<operand1.length();i++){
+			o1[length-1-i]=operand1.charAt(operand1.length()-i-1);
+		}
+		for(int j=0;j<=length-operand1.length();j++){
+			o1[length-operand1.length()-j]=operand1.charAt(0);
+		}
+
+		for(int i=0;i<operand2.length();i++){
+			o2[length-1-i]=operand2.charAt(operand2.length()-i-1);
+		}
+		for(int j=0;j<=length-operand2.length();j++){
+			o2[length-operand2.length()-j]=operand2.charAt(0);
+		}
+		String op1=String.valueOf(o1);
+		String op2=String.valueOf(o2);
+		
+		//初始化寄存器
+		for(int i=0;i<length;i++){
+			product=product+"0";
+		}
+
+		multiplicand=op1;
+		multiplier=op2;
+		product=product+multiplier+"0";
+		for(int j=0;j<length;j++){
+			
+			if(product.charAt(length*2)=='1'&&product.charAt(length*2-1)=='0'){
+				product=this.Addition(product.substring(0,length),multiplicand, '0', length).substring(0,length)+product.substring(length);
+			}
+			if(product.charAt(length*2)=='0'&&product.charAt(length*2-1)=='1'){
+				product=this.Subtraction(product.substring(0,length), multiplicand, length).substring(0,length)+product.substring(length);
+			}
+			product=this.RightShift(product, 1).substring(0,length*2+1);
+
+		}
+		product=product.substring(0,length*2);
+		return product;
 	}
 	public String Division (String operand1, String operand2, int length){
 		return null;
