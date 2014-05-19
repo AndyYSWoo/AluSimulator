@@ -108,7 +108,6 @@ public class ALU {
 		String result=null;
  		int c0=Integer.parseInt(String.valueOf(c));
 		//Turn operands into required length:
-//TODO complement this as a method
 		for(int i=0;i<operand1.length();i++){
 			o1[length-1-i]=operand1.charAt(operand1.length()-i-1);
 		}
@@ -239,9 +238,11 @@ public class ALU {
 		return product;
 	}
 	public String Division (String operand1, String operand2, int length){
+//what if dividend%divisor=0?
 		String result="";
 		String quotient;
 		String remainder;
+		
 		//Turn operands into required length:
 		char[] o1=new char[length];
 		char[] o2=new char[length];
@@ -268,8 +269,6 @@ public class ALU {
 			result=result+dividend.charAt(0);
 		}
 		result=result+dividend;
-		
-		System.out.println(result);
 		char flag=result.charAt(0);
 		for(int i=0;i<length;i++){
 			if(flag==divisor.charAt(0)){
@@ -283,15 +282,23 @@ public class ALU {
 			}else{
 				result=result+"0";
 			}
-System.out.println(result);
 			result=result.substring(1);
-System.out.println(result);
+		}
+		if(flag==divisor.charAt(0)){
+			result=this.Subtraction(result.substring(0,length), divisor, length).substring(0,length)+result.substring(length);
+		}else{
+			result=this.Addition(result.substring(0,length), divisor,'0', length).substring(0,length)+result.substring(length);
+		}
+		flag=result.charAt(0);
+		if(flag==divisor.charAt(0)){
+			result=result+"1";
+		}else{
+			result=result+"0";
 		}
 		
 		quotient=result.substring(length+1);
 		remainder=result.substring(0,length);
-//System.out.println(quotient+"\n"+remainder);
-		if(quotient.charAt(0)!=divisor.charAt(0)){
+		if(dividend.charAt(0)!=divisor.charAt(0)&&quotient.charAt(0)=='1'){
 			quotient=this.Addition(quotient, "0001", '0', length).substring(0,length);
 		}
 		if(remainder.charAt(0)!=dividend.charAt(0)){
@@ -304,7 +311,41 @@ System.out.println(result);
 		return quotient+remainder;
 	}
 	public String Calculation (String number1, String number2,Type type, Operation operation, int length){
-		return null;
+		String tempResult=null;
+		String result=null;
+		String op1=null;
+		String op2=null;
+		switch(type){
+		case INTEGER:
+			op1=this.Complement(number1, length);
+			op2=this.Complement(number2, length);
+			switch(operation){
+			case ADDITION:
+				tempResult=this.Addition(op1, op2, '0', length).substring(0,length);
+				result=this.TrueValue(tempResult);
+				break;
+			case SUBTRACTION:
+				tempResult=this.Subtraction(op1, op2, length).substring(0, length);
+				result=this.TrueValue(tempResult);
+				break;
+			case MULTIPLICATION:
+				tempResult=this.Multiplication(op1, op2, length);
+				result=this.TrueValue(tempResult);
+				break;
+			case DIVISION:
+				tempResult=this.Division(op1, op2, length).substring(0,length);
+				result=this.TrueValue(tempResult);
+				break;
+			default:
+				System.out.println("Wrong Operation");
+				break;
+			}
+			break;
+		default:
+			System.out.println("Wrong Type");
+			break;
+		}
+		return result;
 	}
 
 }

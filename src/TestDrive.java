@@ -1,4 +1,3 @@
-
 public class TestDrive {
 	public static void main(String[] args){
 		ALU alu=new ALU();
@@ -12,6 +11,7 @@ public class TestDrive {
 		//System.out.println(alu.Addition("0000", "0010", '0', 16));
 		//System.out.println(alu.Subtraction("0110", "0010", 16));
 		//System.out.println(alu.Multiplication("1101", "1110", 16));
-		System.out.println(alu.Division("0110", "0100", 8));
+		//System.out.println(alu.Division("1001", "0001", 8));
+		System.out.println(alu.Calculation("7", "-1", ALU.Type.INTEGER, ALU.Operation.DIVISION, 8));
 	}
 }
