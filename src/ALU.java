@@ -17,6 +17,7 @@ public class ALU {
 		DECIMAL
 	};
 	public String Complement (String number, int length){
+//This method may not be allowed to be carried out this way
 		char[] resultArray = new char[length];
 		String result=null;
 		int test=1;
@@ -106,7 +107,8 @@ public class ALU {
 		char[] resultArray=new char[length+1];
 		String result=null;
  		int c0=Integer.parseInt(String.valueOf(c));
-		
+		//Turn operands into required length:
+//TODO complement this as a method
 		for(int i=0;i<operand1.length();i++){
 			o1[length-1-i]=operand1.charAt(operand1.length()-i-1);
 		}
@@ -146,7 +148,7 @@ public class ALU {
 	public String Addition (String operand1, String operand2, char c, int length){
 		String result=null;
 		
-		//将操作数转化为length长度
+		//Turn operands into required length:
 		char[] o1=new char[length];
 		char[] o2=new char[length];
 		for(int i=0;i<operand1.length();i++){
@@ -164,19 +166,20 @@ public class ALU {
 		}
 		String op1=String.valueOf(o1);
 		String op2=String.valueOf(o2);
-
-		//计算按位运算结果
+		//Calculate the result every 8-bit:
 		int flag=length/8;
 		ArrayList<String> resultList=new ArrayList<String>();
-		String result1=this.CLAAdder(op1, op2, c,8);
+		String result1=this.CLAAdder(op1.substring(length-8), op2.substring(length-8), c,8);
 		resultList.add(result1);
 		result=result1.substring(0,8);
 		for(int i=1;i<flag;i++){
-			resultList.add(this.CLAAdder(op1.substring(8*i,8*i+8), op2.substring(8*i,8*i+8), resultList.get(i-1).charAt(8), 8));
+//System.out.println(resultList.get(i-1)+","+resultList.get(i-1).charAt(8));
+//Why .charAt(8) get ''? The length of each result becomes 10?
+			resultList.add(this.CLAAdder(op1.substring(length-(8*i+8),length-8*i), op2.substring(length-(8*i+8),length-8*i), resultList.get(i-1).charAt(9), 8));
 			result=resultList.get(i).substring(0,8)+result;
 		}
 		
-		//计算溢出位
+		//Calculate the overflow:
 		int xn=Integer.parseInt(String.valueOf(operand1.charAt(0)));
 		int yn=Integer.parseInt(String.valueOf(operand2.charAt(0)));
 		int sn=Integer.parseInt(String.valueOf(result.charAt(0)));
@@ -194,7 +197,7 @@ public class ALU {
 		String product="";
 		String multiplicand=null;
 		String multiplier=null;
-		//将操作数转化为length长度
+		//Turn operands into required length:
 		char[] o1=new char[length];
 		char[] o2=new char[length];
 		for(int i=0;i<operand1.length();i++){
@@ -213,7 +216,7 @@ public class ALU {
 		String op1=String.valueOf(o1);
 		String op2=String.valueOf(o2);
 		
-		//初始化寄存器
+		//Initialize the registers:
 		for(int i=0;i<length;i++){
 			product=product+"0";
 		}
@@ -236,7 +239,69 @@ public class ALU {
 		return product;
 	}
 	public String Division (String operand1, String operand2, int length){
-		return null;
+		String result="";
+		String quotient;
+		String remainder;
+		//Turn operands into required length:
+		char[] o1=new char[length];
+		char[] o2=new char[length];
+		for(int i=0;i<operand1.length();i++){
+			o1[length-1-i]=operand1.charAt(operand1.length()-i-1);
+		}
+		for(int j=0;j<=length-operand1.length();j++){
+			o1[length-operand1.length()-j]=operand1.charAt(0);
+		}
+
+		for(int i=0;i<operand2.length();i++){
+			o2[length-1-i]=operand2.charAt(operand2.length()-i-1);
+		}
+		for(int j=0;j<=length-operand2.length();j++){
+			o2[length-operand2.length()-j]=operand2.charAt(0);
+		}
+		String op1=String.valueOf(o1);
+		String op2=String.valueOf(o2);
+		String dividend=op1;
+		String divisor=op2;
+		
+		//Initialize the registers:
+		for(int i=0;i<length;i++){
+			result=result+dividend.charAt(0);
+		}
+		result=result+dividend;
+		
+		System.out.println(result);
+		char flag=result.charAt(0);
+		for(int i=0;i<length;i++){
+			if(flag==divisor.charAt(0)){
+				result=this.Subtraction(result.substring(0,length), divisor, length).substring(0,length)+result.substring(length);
+			}else{
+				result=this.Addition(result.substring(0,length), divisor,'0', length).substring(0,length)+result.substring(length);
+			}
+			flag=result.charAt(0);
+			if(flag==divisor.charAt(0)){
+				result=result+"1";
+			}else{
+				result=result+"0";
+			}
+System.out.println(result);
+			result=result.substring(1);
+System.out.println(result);
+		}
+		
+		quotient=result.substring(length+1);
+		remainder=result.substring(0,length);
+//System.out.println(quotient+"\n"+remainder);
+		if(quotient.charAt(0)!=divisor.charAt(0)){
+			quotient=this.Addition(quotient, "0001", '0', length).substring(0,length);
+		}
+		if(remainder.charAt(0)!=dividend.charAt(0)){
+			if(dividend.charAt(0)==divisor.charAt(0)){
+				remainder=this.Addition(remainder, divisor, '0', length).substring(0,length);
+			}else{
+				remainder=this.Subtraction(remainder, divisor, length).substring(0,length);
+			}
+		}
+		return quotient+remainder;
 	}
 	public String Calculation (String number1, String number2,Type type, Operation operation, int length){
 		return null;
