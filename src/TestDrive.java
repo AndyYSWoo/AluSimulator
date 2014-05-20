@@ -7,11 +7,11 @@ public class TestDrive {
 		//System.out.println(alu.Negation("11111110"));
 		//System.out.println(alu.TrueValue("11100000"));
 		//System.out.println(alu.FullAdder('1', '1', '1'));
-		//System.out.println(alu.CLAAdder("0110", "0110", '0', 8));
-		//System.out.println(alu.Addition("0000", "0010", '0', 16));
+	    //System.out.println(alu.CLAAdder("0100", "0100", '0', 8));
+		System.out.println(alu.Addition("0000", "0010", '0', 40));
 		//System.out.println(alu.Subtraction("0110", "0010", 16));
 		//System.out.println(alu.Multiplication("1101", "1110", 16));
 		//System.out.println(alu.Division("1001", "0001", 8));
-		System.out.println(alu.Calculation("7", "-1", ALU.Type.INTEGER, ALU.Operation.DIVISION, 8));
+		//System.out.println(alu.Calculation("7", "-1", ALU.Type.INTEGER, ALU.Operation.MULTIPLICATION, 8));
 	}
 }

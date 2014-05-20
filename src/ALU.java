@@ -123,11 +123,11 @@ public class ALU {
 		}
 
 		for(int i=0;i<length;i++){
-			p[i]=Integer.parseInt(String.valueOf(o1[i]))|Integer.parseInt(String.valueOf(o2[i]));
-			g[i]=Integer.parseInt(String.valueOf(o1[i]))&Integer.parseInt(String.valueOf(o2[i]));
+			p[i]=Integer.parseInt(String.valueOf(o1[length-1-i]))|Integer.parseInt(String.valueOf(o2[length-1-i]));
+			g[i]=Integer.parseInt(String.valueOf(o1[length-1-i]))&Integer.parseInt(String.valueOf(o2[length-1-i]));
 		}
 
-		carry[8]=c;
+/*		carry[8]=c;
 		carry[7]=String.valueOf((g[7]|(p[7]&c0))).charAt(0);
 		carry[6]=String.valueOf((g[6]|(p[6]&g[7])|(p[6]&p[7]&c0))).charAt(0);
 		carry[5]=String.valueOf((g[5]|(p[5]&g[6])|(p[5]&p[6]&g[7])|(p[5]&p[6]&p[7]&c0))).charAt(0);
@@ -136,12 +136,31 @@ public class ALU {
 		carry[2]=String.valueOf((g[2]|(p[2]&g[3])|(p[2]&p[3]&g[4])|(p[2]&p[3]&p[4]&g[5])|(p[2]&p[3]&p[4]&p[5]&g[6])|(p[2]&p[3]&p[4]&p[5]&p[6]&g[7])|(p[2]&p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
 		carry[1]=String.valueOf((g[1]|(p[1]&g[2])|(p[1]&p[2]&g[3])|(p[1]&p[2]&p[3]&g[4])|(p[1]&p[2]&p[3]&p[4]&g[5])|(p[1]&p[2]&p[3]&p[4]&p[5]&g[6])|(p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&g[7])|(p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
 		carry[0]=String.valueOf((g[0]|(p[0]&g[1])|(p[0]&p[1]&g[2])|(p[0]&p[1]&p[2]&g[3])|(p[0]&p[1]&p[2]&p[3]&g[4])|(p[0]&p[1]&p[2]&p[3]&p[4]&g[5])|(p[0]&p[1]&p[2]&p[3]&p[4]&p[5]&g[6])|(p[0]&p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&g[0])|(p[0]&p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
-
+*/
+		carry[0]=c;
+		switch(length){
+		case 8:
+			carry[8]=String.valueOf((g[7]|(p[7]&g[6])|(p[7]&p[6]&g[5])|(p[7]&p[6]&p[5]&g[4])|(p[7]&p[6]&p[5]&p[4]&g[3])|(p[7]&p[6]&p[5]&p[4]&p[3]&g[2])|(p[7]&p[6]&p[5]&p[4]&p[3]&p[2]&g[1])|(p[7]&p[6]&p[5]&p[4]&p[3]&p[2]&p[1]&g[0])|(p[7]&p[6]&p[5]&p[4]&p[3]&p[2]&p[1]&p[0]&c0))).charAt(0);
+		case 7:
+			carry[7]=String.valueOf((g[6]|(p[6]&g[5])|(p[6]&p[5]&g[4])|(p[6]&p[5]&p[4]&g[3])|(p[6]&p[5]&p[4]&p[3]&g[2])|(p[6]&p[5]&p[4]&p[3]&p[2]&g[1])|(p[6]&p[5]&p[4]&p[3]&p[2]&p[1]&g[0])|(p[6]&p[5]&p[4]&p[3]&p[2]&p[1]&p[0]&c0))).charAt(0);
+		case 6:
+			carry[6]=String.valueOf((g[5]|(p[5]&g[4])|(p[5]&p[4]&g[3])|(p[5]&p[4]&p[3]&g[2])|(p[5]&p[4]&p[3]&p[2]&g[1])|(p[5]&p[4]&p[3]&p[2]&p[1]&g[0])|(p[5]&p[4]&p[3]&p[2]&p[1]&p[0]&c0))).charAt(0);
+		case 5:
+			carry[5]=String.valueOf((g[4]|(p[4]&g[3])|(p[4]&p[3]&g[2])|(p[4]&p[3]&p[2]&g[1])|(p[4]&p[3]&p[2]&p[1]&g[0])|(p[4]&p[3]&p[2]&p[1]&p[0]&c0))).charAt(0);
+		case 4:
+			carry[4]=String.valueOf((g[3]|(p[3]&g[2])|(p[3]&p[2]&g[1])|(p[3]&p[2]&p[1]&g[0])|(p[3]&p[2]&p[1]&p[0]&c0))).charAt(0);
+		case 3:
+			carry[3]=String.valueOf((g[2]|(p[2]&g[1])|(p[2]&p[1]&g[0])|(p[2]&p[1]&p[0]&c0))).charAt(0);
+		case 2:
+			carry[2]=String.valueOf((g[1]|(p[1]&g[0])|(p[1]&p[0]&c0))).charAt(0);
+		case 1:
+			carry[1]=String.valueOf((g[0]|(p[0]&c0))).charAt(0);
+		}
 		for(int k=0;k<length;k++){
-			resultArray[k]=FullAdder(o1[k],o2[k],carry[k+1]).charAt(0);
+			resultArray[k]=FullAdder(o1[k],o2[k],carry[length-k-1]).charAt(0);
 		}
 
-		result=String.valueOf(resultArray)+carry[0];
+		result=String.valueOf(resultArray)+carry[length-1];
 		return result;
 	}
 	public String Addition (String operand1, String operand2, char c, int length){
