@@ -17,7 +17,7 @@ public class ALU {
 		DECIMAL
 	};
 	public String Complement (String number, int length){
-//This method may not be allowed to be carried out this way
+
 		char[] resultArray = new char[length];
 		String result=null;
 		int test=1;
@@ -127,16 +127,6 @@ public class ALU {
 			g[i]=Integer.parseInt(String.valueOf(o1[length-1-i]))&Integer.parseInt(String.valueOf(o2[length-1-i]));
 		}
 
-/*		carry[8]=c;
-		carry[7]=String.valueOf((g[7]|(p[7]&c0))).charAt(0);
-		carry[6]=String.valueOf((g[6]|(p[6]&g[7])|(p[6]&p[7]&c0))).charAt(0);
-		carry[5]=String.valueOf((g[5]|(p[5]&g[6])|(p[5]&p[6]&g[7])|(p[5]&p[6]&p[7]&c0))).charAt(0);
-		carry[4]=String.valueOf((g[4]|(p[4]&g[5])|(p[4]&p[5]&g[6])|(p[4]&p[5]&p[6]&g[7])|(p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
-		carry[3]=String.valueOf((g[3]|(p[3]&g[4])|(p[3]&p[4]&g[5])|(p[3]&p[4]&p[5]&g[6])|(p[3]&p[4]&p[5]&p[6]&g[7])|(p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
-		carry[2]=String.valueOf((g[2]|(p[2]&g[3])|(p[2]&p[3]&g[4])|(p[2]&p[3]&p[4]&g[5])|(p[2]&p[3]&p[4]&p[5]&g[6])|(p[2]&p[3]&p[4]&p[5]&p[6]&g[7])|(p[2]&p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
-		carry[1]=String.valueOf((g[1]|(p[1]&g[2])|(p[1]&p[2]&g[3])|(p[1]&p[2]&p[3]&g[4])|(p[1]&p[2]&p[3]&p[4]&g[5])|(p[1]&p[2]&p[3]&p[4]&p[5]&g[6])|(p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&g[7])|(p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
-		carry[0]=String.valueOf((g[0]|(p[0]&g[1])|(p[0]&p[1]&g[2])|(p[0]&p[1]&p[2]&g[3])|(p[0]&p[1]&p[2]&p[3]&g[4])|(p[0]&p[1]&p[2]&p[3]&p[4]&g[5])|(p[0]&p[1]&p[2]&p[3]&p[4]&p[5]&g[6])|(p[0]&p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&g[0])|(p[0]&p[1]&p[2]&p[3]&p[4]&p[5]&p[6]&p[7]&c0))).charAt(0);
-*/
 		carry[0]=c;
 		switch(length){
 		case 8:
@@ -191,8 +181,7 @@ public class ALU {
 		resultList.add(result1);
 		result=result1.substring(0,8);
 		for(int i=1;i<flag;i++){
-//System.out.println(resultList.get(i-1)+","+resultList.get(i-1).charAt(8));
-//Why .charAt(8) get ''? The length of each result becomes 10?
+
 			resultList.add(this.CLAAdder(op1.substring(length-(8*i+8),length-8*i), op2.substring(length-(8*i+8),length-8*i), resultList.get(i-1).charAt(9), 8));
 			result=resultList.get(i).substring(0,8)+result;
 		}
@@ -257,7 +246,7 @@ public class ALU {
 		return product;
 	}
 	public String Division (String operand1, String operand2, int length){
-//what if dividend%divisor=0?
+
 		String result="";
 		String quotient;
 		String remainder;
