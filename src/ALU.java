@@ -1,7 +1,9 @@
 import java.util.ArrayList;
 
+import com.sun.xml.internal.xsom.impl.parser.SubstGroupBaseTypeRef;
+
 /**
- * @author ������
+ * @author 吴永尚
  * @number 131250092
  */
 public class ALU {
@@ -31,20 +33,194 @@ public class ALU {
 		result=String.valueOf(resultArray);
 		return result;
 	}
-	public String TrueValue (String operand){
-		char[] input;
-		int resultNum=0;
+	public String FloatRepresentation(String number, int sLength, int eLength){
+		//denormalize,infinity to go
 		String result=null;
-		input=operand.toCharArray();
-		for(int i=operand.length()-1;i>0;i--){
-			if(input[i]=='1'){
-				resultNum=resultNum+(int)Math.pow(2,operand.length()-i-1);
-			}else{}
+		String tempResult=null;
+		boolean isZero=true;
+		
+		String sign="0";
+		String integer=null;
+		String integerB=null;
+		String fraction=null;
+		String fractionB="";
+		
+		int exp=0;
+		String exponent=null;
+		String significant=null;
+		
+		if(number.charAt(0)=='-'){
+			sign="1";
+			number=number.substring(1);
 		}
-		if(input[0]=='1'){
-			resultNum=resultNum-(int)Math.pow(2,operand.length()-1);
+		for (int i = 0; i < number.length(); i++) {
+			if(number.charAt(i)=='.'){
+				integer=number.substring(0,i);
+				fraction=number.substring(i+1);
+			}
 		}
-		result=String.valueOf(resultNum);
+		integerB=Complement(integer, sLength);
+		double frac=Double.parseDouble("0."+fraction);
+
+		for(int i=0;i<sLength;i++){
+			if((frac=frac*2)>=1){
+				fractionB=fractionB+"1";
+				frac=frac-1;
+			}else {
+				fractionB=fractionB+"0";
+			}
+			
+		}
+		tempResult=integerB+fractionB;
+		for(int i=0;i<tempResult.length();i++){
+			if(tempResult.charAt(i)=='1'){
+				isZero=false;
+				exp=sLength-1-i;
+				significant=tempResult.substring(i+1);
+				
+				if(significant.length()<sLength){
+					int times=sLength-significant.length();
+					for (int j = 0; j <times; j++) {
+						significant=significant+"0";
+					}
+				}else if(significant.length()>sLength){
+					significant=significant.substring(0,significant.length());
+				}
+				break;
+			}
+		}
+		exp=exp+(int)(Math.pow(2, eLength-1))-1;
+		exponent=Complement(String.valueOf(exp), eLength+1).substring(1,eLength+1);
+		
+		if(isZero){
+			significant=tempResult.substring(0,sLength);
+			exponent="0";
+			for (int i = 1; i < eLength; i++) {
+				exponent=exponent+"0";
+			}
+		}
+
+		result=sign+exponent+significant;
+		return result;
+	}
+	
+	public String IEEE754(String number, int length){
+		String result=null;
+		int sLength=0;
+		int eLength=0;
+		if(length==32){
+			sLength=23;
+			eLength=8;
+		}else if(length==64){
+			sLength=52;
+			eLength=11;
+		}
+		result=FloatRepresentation(number, sLength, eLength);
+		return result;
+	}
+	
+	public String TrueValue (String operand,Type type,int[] length){
+		String result=null;
+		
+		switch (type) {
+		case INTEGER:
+			char[] input;
+			int resultNum=0;
+			
+			input=operand.toCharArray();
+			for(int i=operand.length()-1;i>0;i--){
+				if(input[i]=='1'){
+					resultNum=resultNum+(int)Math.pow(2,operand.length()-i-1);
+				}else{}
+			}
+			if(input[0]=='1'){
+				resultNum=resultNum-(int)Math.pow(2,operand.length()-1);
+			}
+			result=String.valueOf(resultNum);
+			break;
+			
+		case FLOAT:
+			char sign=operand.charAt(0);
+			String resultSign="";
+			int sLength=length[0];
+			int eLength=length[1];
+			String exponent=operand.substring(1,eLength+1);
+			String significant=operand.substring(eLength+1);
+			boolean isExpOne=true;
+			boolean isExpZero=true;
+			boolean isSigZero=true;
+			
+			String integer=null;
+			String fraction=null;
+			int integerValue=0;
+			double fracValue=0;
+			
+			if(sign=='1'){
+				resultSign="-";
+			}
+			
+			for(int i=0;i<eLength;i++){
+				if(exponent.charAt(i)=='1'){isExpZero=false;}
+				if(exponent.charAt(i)=='0'){isExpOne=false;}
+			}
+			for (int i = 0; i < sLength; i++) {
+				if(significant.charAt(i)=='1'){isSigZero=false;}
+				}
+			
+			if(isExpOne&&isSigZero&&sign=='0') {
+				result="+Inf";
+			}else if(isExpOne&&isSigZero&&sign=='1') {
+				result="-Inf";
+			}else if (isExpOne&&!isSigZero) {
+				result="NaN";
+			}else if(isExpZero&&isSigZero){
+				result=resultSign+"0";
+			}else {
+				String temp;
+				int exp;
+				int bias;
+				if(isExpZero&&!isSigZero) {
+				//Denormalize
+					temp="0"+significant;
+					exp=0;
+					bias=exp-((int)(Math.pow(2, eLength-1))-2);
+				}else{
+				//Normalize
+					temp="1"+significant;
+					exp=Integer.parseInt(TrueValue("0"+exponent, Type.INTEGER, length));
+					bias=exp-((int)(Math.pow(2, eLength-1))-1);
+				}
+					if(bias>=0){
+						integer=temp.substring(0,bias+1);
+						fraction=temp.substring(bias+1);
+						}else{
+						String aidTmp="0";
+						for (int i = 1; i < -bias; i++) {
+							aidTmp=aidTmp+"0";
+						}
+						temp=aidTmp+temp;
+						integer=temp.substring(0,1);
+						fraction=temp.substring(1);
+					}
+					integerValue=Integer.parseInt(TrueValue("0"+integer, Type.INTEGER, length));
+					for(int i=0;i<fraction.length();i++){
+						if(fraction.charAt(i)=='1'){
+							fracValue=fracValue+Math.pow(2, -(i+1));
+						}
+					}
+					result=resultSign+String.valueOf(integerValue+fracValue);
+					
+				
+				
+			}
+
+			
+			
+			
+
+			break;
+	}
+		
 		return result;
 	}
 	public String Negation (String operand){
@@ -194,10 +370,192 @@ public class ALU {
 		result=result+overflow;
 		return result;
 	}
+	public String AdditionF(String operand1, String operand2, int sLength, int eLength, int gLength){
+		String result=null;
+		String significant=null;
+		String overflowBit="0";
+		String sign="0";
+		String exponent="";
+		int exp=0;
+		//=========判断符号=============
+		char sign1=operand1.charAt(0);
+		char sign2=operand2.charAt(0);
+		String resultSign1="";
+		String resultSign2="";
+		if(sign1=='1'){
+			resultSign1="-";
+		}
+		if(sign2=='1'){
+			resultSign2="-";
+		}
+		//=========获得指数尾数=========
+		String exponent1=operand1.substring(1,eLength+1);
+		int[] length={sLength,eLength};
+		int expBias1=Integer.parseInt(TrueValue("0"+exponent1, Type.INTEGER, length));
+		int exp1=0;
+		String exponent2=operand2.substring(1,eLength+1);
+		int expBias2=Integer.parseInt(TrueValue("0"+exponent2, Type.INTEGER,length));
+		int exp2=0;
+		String significant1=operand1.substring(eLength+1);
+		String significant2=operand2.substring(eLength+1);
+		//=========增加保护位===========
+		String guard="";
+		for (int i = 0; i < gLength; i++) {
+			guard=guard+"0";
+		}
+		significant1=significant1+guard;
+		significant2=significant2+guard;
+		//=========判断是否为0==========
+		boolean isO1Zero=true;
+		boolean isO2Zero=true;
+		for (int i = 1; i < operand1.length(); i++) {
+			if(operand1.charAt(i)=='1'){isO1Zero=false;break;}
+		}
+		for (int i = 1; i < operand2.length(); i++) {
+			if(operand2.charAt(i)=='1'){isO2Zero=false;break;}
+		}
+		if(isO1Zero){
+			result=operand2+"0";
+		}else if(isO2Zero){
+			result=operand1+"0";
+		}else {
+			//-----------添加隐藏位-------------
+			if(exponent1.contains("1")){
+				significant1="1"+significant1;
+				exp1=expBias1-((int)(Math.pow(2, eLength-1)-1));
+			}else{
+				significant1="0"+significant1;
+				exp1=expBias1-((int)(Math.pow(2, eLength-1))-2);
+				}
+			if(exponent2.contains("1")){
+				significant2="1"+significant2;
+				exp2=expBias2-((int)(Math.pow(2, eLength-1)-1));
+			}else{
+				significant2="0"+significant2;
+				exp2=expBias2-((int)(Math.pow(2, eLength-1))-2);
+				}
+			//===========对齐尾数===============
+			if(exp1>exp2){
+				exponent=exponent1;
+				exp=exp1;
+				String aidSig2="";
+				for (int i = 0; i < exp1-exp2; i++) {
+					aidSig2=aidSig2+"0";
+				}
+				significant2=aidSig2+significant2;
+				significant2=significant2.substring(0,1+sLength+gLength);//0,1+sLength+gLength+1
+			}else if(exp2>exp1){
+				exponent=exponent2;
+				exp=exp2;
+				String aidSig1="";
+				for (int i = 0; i < exp2-exp1; i++) {
+					aidSig1=aidSig1+"0";
+				}
+				significant1=aidSig1+significant1;
+				significant1=significant1.substring(0,1+sLength+gLength);//0,1+sLength+gLength+1
+			}else if(exp1==exp2){
+				exponent=exponent1;
+				exp=exp1;
+			}
+			//----------判断对齐后尾数是否为0-------
+			if(!significant1.contains("1")){
+				result=operand2+"0";
+			}else if(!significant2.contains("1")){
+				result=operand1+"0";
+			}else {
+				if(sign1==sign2){
+					significant=Addition("0"+significant1, "0"+significant2, '0', ((1+sLength+gLength)/8+1)*8);
+					sign=String.valueOf(operand1.charAt(1));
+					significant=significant.substring(0,significant.length()-1);
+					int overflowLoc=significant.length()-1-(sLength+2+gLength)+1;
+					if (significant.charAt(overflowLoc)=='1') {
+						significant=significant.substring(overflowLoc+1,overflowLoc+1+sLength);
+						exp=exp+1;
+						exp=exp+(int)(Math.pow(2, eLength-1))-1;
+						if(exp>=255){overflowBit="1";}
+						exponent=Complement(String.valueOf(exp), eLength+1).substring(1,eLength+1);
+						result=sign+exponent+significant+overflowBit;
+					}else if(significant.charAt(overflowLoc+1)=='1'){
+						significant=significant.substring(overflowLoc+2,overflowLoc+2+sLength);
+						result=sign+exponent+significant+overflowBit;
+					}else{
+						for (int i = overflowLoc+2; i < significant.length(); i++) {
+							if(significant.charAt(i)=='1'){
+								exp=exp-(i-overflowLoc-1);
+								exp=exp+(int)(Math.pow(2, eLength-1))-1;
+								if(exp<=0){overflowBit="1";}
+								exponent=Complement(String.valueOf(exp), eLength+1).substring(1,eLength+1);
+								significant=significant.substring(i+1,i+1+sLength);
+								result=sign+exponent+significant+overflowBit;
+								break;
+							}
+						}
+					}
+				}else{
+					significant2=Subtraction("0",significant2,((1+sLength+gLength)/8+1)*8);
+					significant2=significant2.substring(significant2.length()-1-(sLength+2+gLength)+1,significant2.length()-1);
+					significant=Addition("0"+significant1, "0"+significant2, '0', ((1+sLength+gLength)/8+1)*8);
+					significant=significant.substring(0,significant.length()-1);
+					int overflowLoc=significant.length()-1-(sLength+2+gLength)+1;
+					if(significant.charAt(overflowLoc)=='1'){
+						sign=String.valueOf(operand1.charAt(0));
+						//significant=significant.substring(overflowLoc+1,overflowLoc+2+sLength-1);//overflowLoc+2,overflowLoc+2+sLength
+						overflowLoc=significant.length()-1-(sLength+2+gLength)+1;
+						//=======overflow位置是否正确?=======
+						for (int i = overflowLoc+2; i < significant.length(); i++) {
+							if(significant.charAt(i)=='1'){
+								exp=exp-(i-overflowLoc-1);
+								exp=exp+(int)(Math.pow(2, eLength-1))-1;
+								if(exp<=0){overflowBit="1";}
+								exponent=Complement(String.valueOf(exp), eLength+1).substring(1,eLength+1);
+								significant=significant.substring(i+1,i+1+sLength);
+								result=sign+exponent+significant+overflowBit;
+								break;
+							}
+						}
+					}else{
+						if(operand1.charAt(0)=='1'){
+							sign="0";
+						}else {sign="1";}
+						significant=Subtraction("0", significant, (significant.length()/8+1)*8);
+						significant="0"+significant.substring(significant.length()-1-(sLength+2+gLength)+2,significant.length()-1);
+						overflowLoc=significant.length()-1-(sLength+2+gLength)+1;
+						//=======overflow位置是否正确?=======
+						for (int i = overflowLoc+2; i < significant.length(); i++) {
+							if(significant.charAt(i)=='1'){
+								exp=exp-(i-overflowLoc-1);
+								exp=exp+(int)(Math.pow(2, eLength-1))-1;
+								if(exp<=0){overflowBit="1";}
+								exponent=Complement(String.valueOf(exp), eLength+1).substring(1,eLength+1);
+								significant=significant.substring(i+1,i+1+sLength);
+								result=sign+exponent+significant+overflowBit;
+								break;
+							}
+						}
+					}
+				}
+				
+				
+			}
+				
+		}
+		
+		return result;
+	}
 	public String Subtraction (String operand1, String operand2, int length){
 		String absOperand2=this.Negation(operand2);
 		String result=null;
 		result=this.Addition(operand1, absOperand2, '1', length);
+		return result;
+	}
+	public String SubtractionF(String operand1, String operand2, int sLength, int eLength, int gLength){
+		String result=null;
+		if(operand2.charAt(0)=='0'){
+			operand2="1"+operand2.substring(1);
+		}else {
+			operand2="0"+operand2.substring(1);
+		}
+		result=AdditionF(operand1, operand2, sLength, eLength, gLength);
 		return result;
 	}
 	public String Multiplication (String operand1, String operand2, int length){
@@ -327,22 +685,23 @@ public class ALU {
 		case INTEGER:
 			op1=this.Complement(number1, length);
 			op2=this.Complement(number2, length);
+			int[] lengthNull=null;
 			switch(operation){
 			case ADDITION:
 				tempResult=this.Addition(op1, op2, '0', length).substring(0,length);
-				result=this.TrueValue(tempResult);
+				result=this.TrueValue(tempResult,Type.INTEGER,lengthNull);
 				break;
 			case SUBTRACTION:
 				tempResult=this.Subtraction(op1, op2, length).substring(0, length);
-				result=this.TrueValue(tempResult);
+				result=this.TrueValue(tempResult,Type.INTEGER,lengthNull);
 				break;
 			case MULTIPLICATION:
 				tempResult=this.Multiplication(op1, op2, length);
-				result=this.TrueValue(tempResult);
+				result=this.TrueValue(tempResult,Type.INTEGER,lengthNull);
 				break;
 			case DIVISION:
 				tempResult=this.Division(op1, op2, length).substring(0,length);
-				result=this.TrueValue(tempResult);
+				result=this.TrueValue(tempResult,Type.INTEGER,lengthNull);
 				break;
 			default:
 				System.out.println("Wrong Operation");
